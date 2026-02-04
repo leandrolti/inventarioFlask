@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row mt-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-white text-center p-3 shadow-sm border-primary">
+            <h5>Hardware</h5><h2 class="text-primary">{{ dados.hardware }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-white text-center p-3 shadow-sm border-success">
+            <h5>Software</h5><h2 class="text-success">{{ dados.software }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-white text-center p-3 shadow-sm border-warning">
+            <h5>Redes</h5><h2 class="text-warning">{{ dados.redes }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-white text-center p-3 shadow-sm border-info">
+            <h5>Robótica</h5><h2 class="text-info">{{ dados.robotica }}</h2>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Seus cards existentes -->
+<div class="row mt-4">
+    <!-- ... (mantenha seus cards de Hardware, Software, etc aqui) ... -->
+</div>
+
+<!-- NOVO: Seção do Gráfico -->
+<div class="row mt-5">
+    <div class="col-md-12">
+        <div class="card shadow-sm p-4">
+            <h4 class="text-center mb-4">Distribuição de Inventário por Categoria</h4>
+            <div style="position: relative; height:40vh; width:100%">
+                <canvas id="graficoAtivos"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('graficoAtivos').getContext('2d');
+
+        // Cores personalizadas para combinar com seus cards
+        const cores = [
+            '#0d6efd', // Azul (Hardware)
+            '#198754', // Verde (Software)
+            '#ffc107', // Amarelo (Redes)
+            '#0dcaf0'  // Ciano (Robótica)
+        ];
+
+        new Chart(ctx, {
+            type: 'bar', // Tipo Colunas
+            data: {
+                labels: ['Hardware', 'Software', 'Redes', 'Robótica'],
+                datasets: [{
+                    label: 'Quantidade Total de Itens',
+                    // Pegamos os dados passados pelo Flask (dados.hardware, etc)
+                    data: [
+                        {{ dados.hardware }},
+                        {{ dados.software }},
+                        {{ dados.redes }},
+                        {{ dados.robotica }}
+                    ],
+                    backgroundColor: cores,
+                    borderColor: cores,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Permite que o gráfico use a altura da div pai
+                plugins: {
+                    legend: {
+                        display: false // Esconde a legenda pois as cores já identificam
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1 // Garante que mostre apenas números inteiros
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

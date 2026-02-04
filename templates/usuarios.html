@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card p-4 mb-4 shadow">
+    <h3 class="text-center">Novo Usuário</h3>
+    <form method="POST" class="row g-3">
+        <div class="col-md-4"><input type="text" name="username" class="form-control" placeholder="Usuário" required></div>
+        <div class="col-md-4"><input type="password" name="password" class="form-control" placeholder="Senha" required></div>
+        <div class="col-md-3">
+            <select name="role" class="form-select">
+                <option value="Viewer">Viewer (Consulta)</option>
+                <option value="Analista">Analista de Inventário</option>
+                <option value="Admin">Administrador</option>
+            </select>
+        </div>
+        <div class="col-md-1"><button class="btn btn-success w-100">+</button></div>
+    </form>
+</div>
+
+<table class="table bg-white shadow-sm">
+    <thead class="table-secondary">
+        <tr>
+            <th>Usuário</th>
+            <th>Nível</th>
+            <th>Ações</th> <!-- Nova Coluna -->
+        </tr>
+    </thead>
+    <tbody>
+        {% for u in usuarios %}
+        <tr>
+            <td>{{ u.username }}</td>
+            <td>{{ u.role }}</td>
+            <td style="width: 20%">
+                <a href="{{ url_for('editar_usuario', id=u.id) }}" class="btn btn-sm btn-primary">Editar</a>
+
+                <!-- Botão Deletar (Desativado para o próprio usuário logado) -->
+                {% if u.id != current_user.id %}
+                <button type="button" class="btn btn-sm btn-danger"
+                        data-bs-toggle="modal" data-bs-target="#confirmDeleteUserModal"
+                        data-id="{{ u.id }}" data-nome="{{ u.username }}">
+                    Excluir
+                </button>
+                {% else %}
+                <a href="#" class="btn btn-sm btn-secondary">Sua Conta</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<!-- MODAL DE EXCLUSÃO DE USUÁRIO -->
+<div class="modal fade" id="confirmDeleteUserModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Remover Usuário</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Deseja realmente excluir o acesso de <strong id="nomeUserModal"></strong>?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <a id="btnConfirmarExclusaoUser" href="#" class="btn btn-danger">Confirmar Exclusão</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const confirmDeleteUserModal = document.getElementById('confirmDeleteUserModal');
+    if (confirmDeleteUserModal) {
+        confirmDeleteUserModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            const id = button.getAttribute('data-id');
+            const nome = button.getAttribute('data-nome');
+
+            confirmDeleteUserModal.querySelector('#nomeUserModal').textContent = nome;
+            confirmDeleteUserModal.querySelector('#btnConfirmarExclusaoUser').href = '/deletar_usuario/' + id;
+        });
+    }
+</script>
+{% endblock %}

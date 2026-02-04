@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- FORMULÁRIO DE CADASTRO -->
+<!-- Esconder formulário de cadastro -->
+{% if current_user.role in ['Admin', 'Analista'] %}
+<div class="card p-3 mb-4 shadow-sm">
+    <h4 class="text-center">Cadastrar Novo Ativo</h4>
+    <!-- FORMULÁRIO DE CADASTRO -->
+    <form method="POST" class="row g-2">
+        <div class="col-md-2">
+            <input type="text" name="nome" placeholder="Nome" class="form-control" required>
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="num_serie" placeholder="Nº de Série" class="form-control">
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="tombamento" placeholder="Tombamento" class="form-control">
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="localizacao" placeholder="Localização" class="form-control">
+        </div>
+        <div class="col-md-1">
+            <select name="categoria" class="form-select">
+                <option value="Hardware">Hardware</option>
+                <option value="Software">Software</option>
+                <option value="Redes">Redes</option>
+                <option value="Robótica">Robótica</option>
+            </select>
+        </div>
+        <div class="col-md-1">
+            <input type="number" name="quantidade" placeholder="Qtd" class="form-control" min="1" value="1">
+        </div>
+        <div class="col-md-1">
+            <select name="status" class="form-select">
+                <option value="Novo">Novo</option>
+                <option value="Usado">Usado</option>
+                <option value="Com defeito">Com defeito</option>
+                <option value="Para descarte">Para descarte</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="descricao" placeholder="Descrição" class="form-control">
+        </div>
+        <div class="col-md-1">
+            <button class="btn btn-success w-100">+</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+<!-- TABELA DE ATIVOS -->
+<!-- TABELA ATUALIZADA -->
+<table id="tabelaAtivos" class="table table-striped bg-white shadow-sm rounded">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Nº de Série</th> <!-- Novo -->
+            <th>Tombamento</th> <!-- Novo -->
+            <th>Localização</th> <!-- Novo -->
+            <th>Categoria</th>
+            <th>Qtd</th>
+            <th>Status</th>
+            <th>Descrição</th>
+            <th style="width:15%">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in ativos %}
+        <tr>
+            <td>{{ a.nome }}</td>
+            <td>{{ a.num_serie }}</td> <!-- Novo -->
+            <td class="small">{{ a.tombamento }}</td>
+            <td>{{ a.localizacao }}</td>
+            <td>{{ a.categoria }}</td>
+            <td>{{ a.quantidade }}</td>
+            <td><span class="badge bg-primary">{{ a.status }}</span></td>
+            <td>{{ a.descricao }}</td>
+            <td>
+                <!-- Botão Editar -->
+                <a href="{{ url_for('editar_ativo', id=a.id) }}" class="btn btn-sm btn-primary">Editar</a>
+
+                <!-- Botão Deletar com confirmação simples do navegador -->
+
+
+                <button type="button"
+                        class="btn btn-sm btn-danger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#confirmDeleteModal"
+                        data-id="{{ a.id }}"
+                        data-nome="{{ a.nome }}">
+                    Excluir
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- O MODAL PRECISA ESTAR DENTRO DO BLOCK CONTENT -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Confirmar Exclusão</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Tem certeza que deseja excluir o ativo: <strong id="nomeAtivoModal"></strong>?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <a id="btnConfirmarExclusao" href="#" class="btn btn-danger">Sim, Excluir</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+
+        if (confirmDeleteModal) {
+            confirmDeleteModal.addEventListener('show.bs.modal', event => {
+                // Botão que acionou o modal
+                const button = event.relatedTarget;
+
+                // Extrair as informações dos atributos data-
+                const id = button.getAttribute('data-id');
+                const nome = button.getAttribute('data-nome');
+
+                // Selecionar elementos dentro do modal
+                const modalNome = confirmDeleteModal.querySelector('#nomeAtivoModal');
+                const modalBtnExcluir = confirmDeleteModal.querySelector('#btnConfirmarExclusao');
+
+                // Inserir os dados dinamicamente
+                modalNome.textContent = nome;
+                modalBtnExcluir.href = '/deletar/' + id;
+            });
+        }
+    });
+</script>
+<script>
+$(document).ready(function() {
+    $('#tabelaAtivos').DataTable({
+        "pageLength": 10, // Quantidade de itens por página
+        "language": {
+            "url": "https://cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json"
+        },
+        "dom": 'Bfrtip', // Define onde os botões e a busca aparecem
+        "buttons": [
+            {
+                extend: 'csv',
+                text: '<i class="fas fa-file-csv"></i> CSV', // Adicionei texto claro
+                className: 'btn btn-primary btn-sm me-1', // Azul
+                exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] } // Atualizado para exportar 7 colunas
+            },
+            {
+                extend: 'excel',
+                text: '<i class="fas fa-file-excel"></i> Excel',
+                className: 'btn btn-success btn-sm me-1', // Verde
+                title: 'Inventario_Ativos',
+                exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] }            },
+            {
+                extend: 'pdf',
+                text: '<i class="fas fa-file-pdf"></i> PDF',
+                className: 'btn btn-danger btn-sm me-1', // Vermelho
+                orientation: 'landscape', // Recomendado pois a tabela ficou larga
+                title: 'Inventário de TI - JMF',
+                exportOptions: { columns: [0, 1, 2, 3, 4, 5, 6, 7] }
+            }
+        ]
+    });
+
+    // Código do Modal de Exclusão (mantenha o que você já tinha aqui abaixo)
+    const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+    // ... restante do seu script do modal ...
+});
+</script>
+{% endblock %}

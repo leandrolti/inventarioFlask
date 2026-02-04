@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">Meu Perfil</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Nome de Usuário</label>
+                        <input type="text" name="username" value="{{ current_user.username }}" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nível de Acesso</label>
+                        <input type="text" class="form-control" value="{{ current_user.role }}" disabled>
+                        <div class="form-text">O nível de acesso só pode ser alterado por um administrador.</div>
+                    </div>
+
+                    <hr>
+                    <h5>Alterar Senha</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Nova Senha</label>
+                        <input type="password" name="password" class="form-control" placeholder="Deixe em branco para não alterar">
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">Salvar Alterações</button>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">Voltar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
